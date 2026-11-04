@@ -1,5 +1,14 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import '../models/tx_item.dart';
 import '../services/auth_service.dart';
+import '../services/firestore_service.dart';
+import '../utils/helpers.dart';
+import 'add_transaction_screen.dart';
+import 'budget_screen.dart';
+import 'expenses_screen.dart';
+import 'report_screen.dart';
 import 'settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -12,14 +21,106 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedTab = 0;
 
-  // TODO: Replace with real Firestore data once Expense/Income/Budget CRUD is built
-  final double _budgetSpent = 0;
-  final double _budgetTotal = 0;
-  final double _totalExpense = 0;
-  final double _totalIncome = 0;
-  final double _totalSavings = 0;
+  final _service = FirestoreService();
+  final List<StreamSubscription> _subs = [];
+  final _now = DateTime.now();
 
-  final List<Map<String, dynamic>> _recentExpenses = [];
+  List<TxItem> _expenses = [];
+  List<TxItem> _incomes = [];
+  double _budgetTotal = 0;
+  bool _gotExp = false, _gotInc = false, _gotBud = false;
+  int _lastLevel = 0;
+
+  double get _budgetSpent => sumMonth(_expenses, _now);
+  double get _totalExpense => _budgetSpent;
+  double get _totalIncome => sumMonth(_incomes, _now);
+  double get _totalSavings => _totalIncome - _totalExpense;
+
+  List<Map<String, dynamic>> get _recentExpenses => _expenses
+      .take(5)
+      .map(
+        (e) => {
+          'title': e.title,
+          'time': '${e.category} • ${DateFormat('dd MMM').format(e.date)}',
+          'amount': e.amount.toStringAsFixed(0),
+          'icon': categoryIcon(e.category),
+          'color': categoryColor(e.category),
+        },
+      )
+      .toList();
+
+  @override
+  void initState() {
+    super.initState();
+    _subs.add(
+      _service.streamTx('expenses').listen((v) {
+        setState(() {
+          _expenses = v;
+          _gotExp = true;
+        });
+        _checkAlert();
+      }),
+    );
+    _subs.add(
+      _service.streamTx('incomes').listen((v) {
+        setState(() {
+          _incomes = v;
+          _gotInc = true;
+        });
+      }),
+    );
+    _subs.add(
+      _service.streamBudget(_now).listen((v) {
+        setState(() {
+          _budgetTotal = v;
+          _gotBud = true;
+        });
+        _checkAlert();
+      }),
+    );
+  }
+
+  @override
+  void dispose() {
+    for (final s in _subs) {
+      s.cancel();
+    }
+    super.dispose();
+  }
+
+  void _checkAlert() {
+    if (!(_gotExp && _gotInc && _gotBud)) return;
+    final level = alertLevel(_budgetSpent, _budgetTotal);
+    final raised = level > _lastLevel;
+    _lastLevel = level;
+    if (raised)
+      WidgetsBinding.instance.addPostFrameCallback((_) => _showAlert(level));
+  }
+
+  void _showAlert(int level) {
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        icon: Icon(
+          Icons.warning_amber_rounded,
+          color: level == 100 ? Colors.red : Colors.orange,
+          size: 40,
+        ),
+        title: Text(level == 100 ? 'Budget exceeded' : 'Budget alert $level%'),
+        content: Text(alertMessage(level)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _open(Widget page) =>
+      Navigator.push(context, MaterialPageRoute(builder: (_) => page));
 
   @override
   Widget build(BuildContext context) {
@@ -55,8 +156,22 @@ class _HomeScreenState extends State<HomeScreen> {
                   clipBehavior: Clip.none,
                   children: [
                     _RoundIconButton(
-                      icon: Icons.notifications_none,
-                      onTap: () {},
+                      icon: _lastLevel > 0
+                          ? Icons.notifications_active
+                          : Icons.notifications_none,
+                      onTap: () {
+                        if (_budgetTotal <= 0) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Set a monthly budget to get alerts.',
+                              ),
+                            ),
+                          );
+                        } else {
+                          _showAlert(_lastLevel);
+                        }
+                      },
                     ),
                   ],
                 ),
@@ -197,7 +312,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               : progress >= 1
                               ? 'Budget exceeded!'
                               : progress >= 0.8
-                              ? 'Careful! You are close to your budget.'
+                              ? 'Careful! ${(progress * 100).toStringAsFixed(0)}% of budget used.'
                               : 'Great! You are within your budget.',
                           style: const TextStyle(
                             color: Colors.white,
@@ -262,7 +377,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 TextButton(
-                  onPressed: () {},
+                  onPressed: () => _open(const ExpensesScreen()),
                   child: const Row(
                     children: [
                       Text('View All'),
@@ -281,7 +396,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     label: 'Add Expense',
                     bg: Colors.deepPurple.shade50,
                     iconColor: Colors.deepPurple,
-                    onTap: () => _showComingSoon(context, 'Add Expense'),
+                    onTap: () =>
+                        _open(const AddTransactionScreen(isExpense: true)),
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -291,7 +407,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     label: 'Add Income',
                     bg: Colors.green.shade50,
                     iconColor: Colors.green,
-                    onTap: () => _showComingSoon(context, 'Add Income'),
+                    onTap: () =>
+                        _open(const AddTransactionScreen(isExpense: false)),
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -301,7 +418,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     label: 'Set Budget',
                     bg: Colors.red.shade50,
                     iconColor: Colors.red,
-                    onTap: () => _showComingSoon(context, 'Set Budget'),
+                    onTap: () => _open(const BudgetScreen()),
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -311,7 +428,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     label: 'View Report',
                     bg: Colors.blue.shade50,
                     iconColor: Colors.blue,
-                    onTap: () => _showComingSoon(context, 'View Report'),
+                    onTap: () => _open(const ReportScreen()),
                   ),
                 ),
               ],
@@ -329,7 +446,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 TextButton(
-                  onPressed: () {},
+                  onPressed: () => _open(const ExpensesScreen()),
                   child: const Row(
                     children: [
                       Text('View All'),
@@ -420,7 +537,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _showComingSoon(context, 'Add Expense'),
+        onPressed: () => _open(const AddTransactionScreen(isExpense: true)),
         backgroundColor: Colors.deepPurple,
         shape: const CircleBorder(),
         child: const Icon(Icons.add, color: Colors.white),
@@ -442,31 +559,25 @@ class _HomeScreenState extends State<HomeScreen> {
               icon: Icons.receipt_long,
               label: 'Expenses',
               selected: _selectedTab == 1,
-              onTap: () => setState(() => _selectedTab = 1),
+              onTap: () => _open(const ExpensesScreen()),
             ),
             const SizedBox(width: 40), // space for FAB
             _NavItem(
               icon: Icons.pie_chart_outline,
               label: 'Budget',
               selected: _selectedTab == 2,
-              onTap: () => setState(() => _selectedTab = 2),
+              onTap: () => _open(const BudgetScreen()),
             ),
             _NavItem(
               icon: Icons.person_outline,
               label: 'Profile',
               selected: _selectedTab == 3,
-              onTap: () => setState(() => _selectedTab = 3),
+              onTap: () => _open(const SettingsScreen()),
             ),
           ],
         ),
       ),
     );
-  }
-
-  void _showComingSoon(BuildContext context, String feature) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('$feature — coming next')));
   }
 }
 

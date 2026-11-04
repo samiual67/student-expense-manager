@@ -57,11 +57,12 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       await _authService.sendPasswordResetEmail(email);
       if (!mounted) return;
+      setState(() => _errorMessage = null);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Password reset link sent to $email')),
       );
     } catch (e) {
-      setState(() => _errorMessage = _authService.friendlyErrorMessage(e));
+      setState(() => _errorMessage = 'DEBUG: $e');
     }
   }
 
