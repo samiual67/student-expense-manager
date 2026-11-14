@@ -42,7 +42,7 @@ Instead of just listing transactions, the app tells you **how much you can safel
 | | Feature | Description |
 |---|---|---|
 | ➕ | **Income & Expense** | Add, edit and delete transactions with title, amount, category, date and note |
-| ⚡ | **Quick Add** | One tap adds common expenses (Rickshaw, Bus, Chai, Snacks, Lunch, Recharge) |
+| ⚡ | **Quick Add** | One tap adds common expenses (Rickshaw, Bus, Chai, Snacks, Lunch, Recharge) with an Undo option |
 | 🌤️ | **Safe to spend today** | Daily limit calculated from your budget and the days left in the month |
 | 💡 | **Spending insights** | Weekly trend vs last week, top category and average spend per day |
 
@@ -51,6 +51,7 @@ Instead of just listing transactions, the app tells you **how much you can safel
 |---|---|---|
 | 🎯 | **Monthly budget** | Set a budget with a live progress ring (turns orange and red as you approach the limit) |
 | 🔔 | **Budget alerts** | Warnings when you cross spending thresholds |
+| 🏷️ | **Category limits** | Set a monthly limit per category (Food, Transport...) with orange and red alerts |
 | 🐷 | **Savings tracker** | Monthly and all-time savings at a glance |
 | 🏁 | **Savings goal** | Name a goal, set a target and watch the progress bar fill |
 
@@ -70,6 +71,8 @@ Instead of just listing transactions, the app tells you **how much you can safel
 | 👤 | **Editable profile** | Name, phone, university, department and student ID |
 | 🔐 | **Secure auth** | Firebase Authentication with email/password and password reset |
 | ☁️ | **Real-time sync** | Cloud Firestore keeps your data safe and up to date |
+| ✨ | **Splash and onboarding** | Animated splash and a 3-page intro on first launch |
+| 🧹 | **Reset all data** | Clear all records from Settings (with confirmation) |
 
 ---
 
@@ -77,17 +80,17 @@ Instead of just listing transactions, the app tells you **how much you can safel
 
 <div align="center">
 
-| Login | Home | Add Transaction |
+| Login | Register | Home |
 |:---:|:---:|:---:|
-| <img src="screenshots/login.png" width="220" /> | <img src="screenshots/home.png" width="220" /> | <img src="screenshots/add.png" width="220" /> |
+| <img src="screenshots/login.jpg" width="230" /> | <img src="screenshots/registration.jpg" width="230" /> | <img src="screenshots/home.jpg" width="230" /> |
 
-| History | Budget | Report |
+| Add Income | History | Budget & Savings |
 |:---:|:---:|:---:|
-| <img src="screenshots/history.png" width="220" /> | <img src="screenshots/budget.png" width="220" /> | <img src="screenshots/report.png" width="220" /> |
+| <img src="screenshots/add%20income.jpg" width="230" /> | <img src="screenshots/history.jpg" width="230" /> | <img src="screenshots/budget%26%20saving.jpg" width="230" /> |
 
-| Settings | Dark Mode |
+| Reports | Profile & Settings |
 |:---:|:---:|
-| <img src="screenshots/settings.png" width="220" /> | <img src="screenshots/dark.png" width="220" /> |
+| <img src="screenshots/report.jpg" width="230" /> | <img src="screenshots/profile%20settings.jpg" width="230" /> |
 
 </div>
 
@@ -122,6 +125,8 @@ lib/
 │   ├── auth_service.dart     # Register, login, logout, reset password
 │   └── firestore_service.dart# Transactions, budgets, goals
 ├── screens/
+│   ├── splash_screen.dart
+│   ├── onboarding_screen.dart
 │   ├── login_screen.dart
 │   ├── register_screen.dart
 │   ├── home_screen.dart
@@ -131,7 +136,8 @@ lib/
 │   ├── report_screen.dart
 │   └── settings_screen.dart
 ├── widgets/
-│   └── insights_card.dart    # Spending insights
+│   ├── insights_card.dart    # Spending insights
+│   └── category_budget_card.dart # Category limits
 └── utils/
     └── helpers.dart          # Categories, icons, colors, calculations
 ```
@@ -143,7 +149,7 @@ users/{uid}
  ├── name, email, phone, university, department, studentId
  ├── expenses/{id}   → title, amount, category, date, note
  ├── incomes/{id}    → title, amount, category, date, note
- ├── budgets/{YYYY-MM} → amount
+ ├── budgets/{YYYY-MM} → amount, categories (per-category limits)
  └── goals/main      → title, target
 ```
 
@@ -210,8 +216,9 @@ flutter run -d chrome
 - [x] Quick Add
 - [x] Spending insights
 - [x] Editable profile
-- [ ] Splash screen and onboarding
-- [ ] Category-wise budget limits
+- [x] Splash screen and onboarding
+- [x] Category-wise budget limits
+- [x] Reset all data and Undo for Quick Add
 - [ ] Wallet balances (Cash, bKash, Bank)
 - [ ] Bangla / English language switch
 - [ ] CSV export

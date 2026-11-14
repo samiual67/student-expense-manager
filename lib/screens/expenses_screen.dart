@@ -199,10 +199,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                 border: Border.all(color: border),
               ),
               child: Row(
-                children: [
-                  toggleItem('Expenses', true),
-                  toggleItem('Income', false),
-                ],
+                children: [toggleItem('Expenses', true), toggleItem('Income', false)],
               ),
             ),
           ),
@@ -261,9 +258,8 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                           c,
                           style: TextStyle(
                             fontSize: 13,
-                            fontWeight: selected
-                                ? FontWeight.w700
-                                : FontWeight.w500,
+                            fontWeight:
+                                selected ? FontWeight.w700 : FontWeight.w500,
                             color: selected ? color : scheme.onSurface,
                           ),
                         ),
@@ -475,12 +471,9 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                                           height: 48,
                                           width: 48,
                                           decoration: BoxDecoration(
-                                            color: color.withValues(
-                                              alpha: 0.14,
-                                            ),
-                                            borderRadius: BorderRadius.circular(
-                                              16,
-                                            ),
+                                            color: color.withValues(alpha: 0.14),
+                                            borderRadius:
+                                                BorderRadius.circular(16),
                                           ),
                                           child: Icon(
                                             categoryIcon(item.category),
@@ -522,6 +515,68 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                                             fontSize: 15,
                                             color: amountColor,
                                           ),
+                                        ),
+                                        PopupMenuButton<String>(
+                                          padding: EdgeInsets.zero,
+                                          icon: Icon(
+                                            Icons.more_vert_rounded,
+                                            size: 20,
+                                            color: muted,
+                                          ),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(16),
+                                          ),
+                                          onSelected: (v) {
+                                            if (v == 'edit') {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (_) =>
+                                                      AddTransactionScreen(
+                                                        isExpense: _isExpense,
+                                                        existing: item,
+                                                      ),
+                                                ),
+                                              );
+                                            } else {
+                                              _confirmDelete(item);
+                                            }
+                                          },
+                                          itemBuilder: (_) => const [
+                                            PopupMenuItem(
+                                              value: 'edit',
+                                              child: Row(
+                                                children: [
+                                                  Icon(
+                                                    Icons.edit_outlined,
+                                                    size: 18,
+                                                  ),
+                                                  SizedBox(width: 10),
+                                                  Text('Edit'),
+                                                ],
+                                              ),
+                                            ),
+                                            PopupMenuItem(
+                                              value: 'delete',
+                                              child: Row(
+                                                children: [
+                                                  Icon(
+                                                    Icons.delete_outline_rounded,
+                                                    size: 18,
+                                                    color: Color(0xFFFF5D6C),
+                                                  ),
+                                                  SizedBox(width: 10),
+                                                  Text(
+                                                    'Delete',
+                                                    style: TextStyle(
+                                                      color: Color(0xFFFF5D6C),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ],
                                     ),

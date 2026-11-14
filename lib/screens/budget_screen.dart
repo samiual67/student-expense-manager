@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../models/tx_item.dart';
 import '../services/firestore_service.dart';
 import '../utils/helpers.dart';
+import '../widgets/category_budget_card.dart';
 
 class BudgetScreen extends StatefulWidget {
   const BudgetScreen({super.key});
@@ -25,6 +26,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
   List<TxItem> _expenses = [];
   List<TxItem> _incomes = [];
   double _budget = 0;
+  Map<String, double> _catLimits = {};
   double _goalTarget = 0;
   String _goalTitle = '';
   bool _budgetFilled = false;
@@ -49,6 +51,11 @@ class _BudgetScreenState extends State<BudgetScreen> {
           if (v > 0) _budgetCtrl.text = v.toStringAsFixed(0);
         }
       }),
+    );
+    _subs.add(
+      _service
+          .streamCategoryBudgets(_month)
+          .listen((v) => setState(() => _catLimits = v)),
     );
     _subs.add(
       _service.streamGoal().listen((g) {
@@ -337,6 +344,14 @@ class _BudgetScreenState extends State<BudgetScreen> {
                 ),
               ),
             ),
+          ),
+          const SizedBox(height: 16),
+
+          CategoryBudgetCard(
+            expenses: _expenses,
+            month: _month,
+            limits: _catLimits,
+            onSave: (cat, v) => _service.setCategoryBudget(_month, cat, v),
           ),
           const SizedBox(height: 16),
 

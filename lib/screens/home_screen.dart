@@ -277,7 +277,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _quickAdd(String title, double amount, String category) async {
     try {
-      await _service.addTx(
+      final id = await _service.addTxReturnId(
         'expenses',
         TxItem(
           id: '',
@@ -293,7 +293,11 @@ class _HomeScreenState extends State<HomeScreen> {
         ..showSnackBar(
           SnackBar(
             content: Text('Added $title ৳ ${amount.toStringAsFixed(0)}'),
-            duration: const Duration(seconds: 2),
+            duration: const Duration(seconds: 4),
+            action: SnackBarAction(
+              label: 'Undo',
+              onPressed: () => _service.deleteTx('expenses', id),
+            ),
           ),
         );
     } catch (_) {
@@ -899,6 +903,8 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: BottomAppBar(
+        height: 78,
+        padding: EdgeInsets.zero,
         color: _surfaceOf(context),
         elevation: 0,
         surfaceTintColor: Colors.transparent,

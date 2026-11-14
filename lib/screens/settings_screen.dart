@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/theme_provider.dart';
 import '../services/auth_service.dart';
+import '../services/firestore_service.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -38,6 +39,64 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Profile updated')));
+    }
+  }
+
+  Future<void> _resetData() async {
+    final ctrl = TextEditingController();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setD) => AlertDialog(
+          icon: const Icon(
+            Icons.delete_forever_rounded,
+            color: Color(0xFFFF5D6C),
+            size: 40,
+          ),
+          title: const Text('Reset all data?'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'All expenses, incomes, budgets and your savings goal will be deleted. This cannot be undone. Your account and profile will stay.',
+              ),
+              const SizedBox(height: 14),
+              TextField(
+                controller: ctrl,
+                onChanged: (_) => setD(() {}),
+                decoration: const InputDecoration(
+                  hintText: 'Type RESET to confirm',
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: ctrl.text.trim() == 'RESET'
+                  ? () => Navigator.pop(ctx, true)
+                  : null,
+              child: const Text('Delete everything'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    try {
+      await FirestoreService().deleteAllData();
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('All data deleted')));
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not reset. Check your connection.')),
+      );
     }
   }
 
@@ -293,6 +352,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               const SizedBox(height: 24),
 
+              sectionLabel('DATA'),
+              Card(
+                clipBehavior: Clip.antiAlias,
+                child: ListTile(
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 6,
+                  ),
+                  leading: iconTile(
+                    Icons.delete_sweep_rounded,
+                    const Color(0xFFFF5D6C),
+                  ),
+                  title: const Text(
+                    'Reset All Data',
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  subtitle: const Text(
+                    'Delete all expenses, income, budgets and goal',
+                  ),
+                  onTap: _resetData,
+                ),
+              ),
+              const SizedBox(height: 24),
+
               sectionLabel('ACCOUNT'),
               Card(
                 clipBehavior: Clip.antiAlias,
@@ -398,9 +481,7 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-      ),
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
         child: Form(

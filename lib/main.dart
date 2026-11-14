@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_options.dart';
 import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
+import 'screens/splash_screen.dart';
 import 'providers/theme_provider.dart';
 
 void main() async {
@@ -155,7 +156,7 @@ class MyApp extends StatelessWidget {
       themeMode: themeProvider.themeMode,
       theme: buildTheme(Brightness.light),
       darkTheme: buildTheme(Brightness.dark),
-      home: const AuthGate(),
+      home: const SplashScreen(next: AuthGate()),
     );
   }
 }
