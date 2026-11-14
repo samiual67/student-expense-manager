@@ -2,7 +2,7 @@
 
 <img src="android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png" width="96" alt="App icon" />
 
-# Student Monthly Expense Manager
+# Student  Expense Manager
 
 **A premium Flutter + Firebase app that helps students track income, control spending and reach savings goals.**
 
@@ -248,7 +248,7 @@ This project was created for academic purposes as part of a university course.
 
 <div align="center">
 
-**Made with ❤️ using Flutter and Firebase**
+**Made with  using Flutter and Firebase**
 
 ⭐ Star this repo if you found it useful!
 
