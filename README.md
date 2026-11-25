@@ -1,9 +1,35 @@
+<div align="center">
 
+# 💰 Student Expense Manager
 
-# Student  Expense Manager
+**Track every taka. Stay within budget.**
 
-# Login:   Email: demo@sami.com
- #         Password: Demo@1234
+[![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-Open_App-7c3aed?style=for-the-badge)](https://student-expense-manager-d455f.web.app)
+![Flutter](https://img.shields.io/badge/Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white)
+![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)
+
+</div>
+
+---
+
+## 🔐 Demo Login
+
+| | |
+|---|---|
+| 📧 **Email** | `demo@sami.com` |
+| 🔑 **Password** | `Demo@1234` |
+
+👉 [Click here to try the live app](https://student-expense-manager-d455f.web.app)
+
+---
+
+## ✨ Features
+
+- Add income and expenses in seconds
+- Monthly budget tracking with alerts
+- Daily safe-to-spend limit
+- Savings goals
+- Clean light and dark themes
 
 **A premium Flutter + Firebase app that helps students track income, control spending and reach savings goals.**
 
