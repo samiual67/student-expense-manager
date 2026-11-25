@@ -1,8 +1,11 @@
-<div align="center">
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/4207e29e-8c79-45d2-bba0-f5ca7d2d0347" /><div align="center">
 
 <img src="android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png" width="96" alt="App icon" />
 
 # Student  Expense Manager
+
+# Login:   Email: demo@sami.com
+ #         Password: Demo@1234
 
 **A premium Flutter + Firebase app that helps students track income, control spending and reach savings goals.**
 
